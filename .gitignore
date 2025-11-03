@@ -1,0 +1,27 @@
+# Ignore everything by default; selectively allow source packages we care about
+*
+
+# Allow this gitignore itself
+!.gitignore
+
+# Keep core source packages
+!api_adapter/
+!api_adapter/**
+!pipeline/
+!pipeline/**
+!storage/
+!storage/**
+!utils/
+!utils/**
+
+# Always ignore transient artifacts
+*.log
+__pycache__/
+*.pyc
+
+# Ignore environment/config and build artifacts
+.env
+news_topic_model/
+news_topic_model.egg-info/
+data/
+logs/
