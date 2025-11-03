@@ -3,133 +3,93 @@
 ## 🚀 Overview
 
 An end-to-end asynchronous pipeline that ingests and deduplicates news articles from public APIs, processes their content, and prepares them for analysis.  
-The system is designed for modularity, fault tolerance, and scalability — serving as a foundation for building intelligent content discovery and topic modeling systems.
+The system is designed for modularity, fault tolerance, and scalability — a foundation for building intelligent content discovery, topic modelling, or downstream analytics.
 
 ---
 
 ## 🧱 Architecture
 
 ```text
-[ Load Balancer ]
-       ↓
-[ Producer Worker ] 
-       ↓
-[ URL Queue ]
-       ↓
-[ Fetcher Worker ]
-       ↓
-[ Content Queue ]
-       ↓
-[ Persistor Worker ]
-       ↓
-[ SQLite + JSONL + Parquet ]
+Producer (round robin per bucket)
+        ↓
+URL Queue (asyncio.Queue)
+        ↓
+Fetchers × 3 (content extraction)
+        ↓
+Content Queue (asyncio.Queue)
+        ↓
+Persistor (JSONL + Parquet + SQLite)
 ```
 
-- **Producer** – Uses a load balancer to distribute requests across categories (e.g., politics, sports).  
-- **Fetcher** – Downloads and hashes article content; normalizes text with [Trafilatura](https://github.com/adbar/trafilatura).  
-- **Persistor** – Writes JSONL streams, buffers Parquet files, and maintains an SQLite database for metadata and deduplication.  
-- **Orchestrator** – Manages all tasks using `asyncio.TaskGroup`, monitors queue sizes, and ensures clean shutdowns through sentinels.  
+- **Producer** – Discovers URLs via NewsAPI/RapidAPI queries per topic bucket and enqueues enriched discovery records.
+- **Fetcher Workers** – Concurrently fetch article content with `httpx`, normalise with `trafilatura`, and produce hash IDs.
+- **Persistor** – Streams JSONL, buffers Parquet batches with `pyarrow`, and upserts metadata into SQLite for deduplication.
+- **Run Orchestrator** – Uses `asyncio.TaskGroup` for supervised execution, queue monitoring, and graceful shutdown (sentinel fan-out).
 
 ---
 
-## ⚙️ Tech Stack
+## ⚙️ Requirements
 
-- **Language:** Python 3.11  
-- **Core Libraries:** `asyncio`, `aiohttp`, `trafilatura`, `pyarrow`, `sqlite3`  
-- **Data Formats:** JSONL, Parquet, SQLite  
-- **Architecture:** Event-driven async pipeline with backpressure monitoring  
-- **Orchestration:** Custom supervisor and monitor tasks built using structured concurrency  
-
----
-
-## 🗃️ Data Persistence & Idempotency
-
-Each article is persisted across three formats:
-
-| Format   | Description | Purpose |
-|-----------|--------------|----------|
-| `.jsonl` | Streamed write | Line-by-line traceable ingestion |
-| `.parquet` | Buffered batch | Efficient columnar format for analytics |
-| `.db (SQLite)` | Upsert table | Deduplication and metadata tracking |
-
-SQLite ensures **idempotent writes** using a composite unique key on `url` and `content_id`.
-
----
-
-## 🧩 Pipeline Coordination
-
-### Orchestrator (`run.py`)
-Handles the lifecycle of all tasks in parallel:
-- Supervised execution (`supervise()`) with failure propagation  
-- Queue monitoring every 5 seconds  
-- Graceful cancellation and sentinel handoff between stages  
-- Logs backpressure to detect bottlenecks  
-
-### Supervised Flow
-```bash
-Producer → URL Queue → Fetcher → Content Queue → Persistor
-```
-
-If any stage crashes, all others are safely cancelled and logs provide trace diagnostics.
-
----
-
-## 🧠 Future Enhancements
-
-- Integration with **Kafka or Redis Streams** for real-time streaming  
-- **Embedding-based topic clustering** using `sentence-transformers`  
-- REST endpoint for querying and monitoring ingestion metrics  
-
----
-
-## 💻 Running Locally
+Python 3.11+
 
 ```bash
-# Clone the repository
-git clone https://github.com/ayoabass777/news-pipeline.git
-cd news-pipeline
-
-# Create and activate a virtual environment
-python -m venv env
-source env/bin/activate  # (On Windows: env\Scripts\activate)
-
-# Install dependencies
 pip install -r requirements.txt
-
-# Run the pipeline
-python src/pipeline/run.py
 ```
+
+Key packages: `httpx`, `trafilatura`, `aiolimiter`, `pyarrow`, `pydantic`, `python-dotenv`.
 
 ---
 
-## 📂 Output Directory
+## 🔐 Configuration
+
+Copy the example environment file and fill in your RapidAPI credentials:
 
 ```bash
-/data/
-│
-├── articles.jsonl      # Raw streamed output
-├── articles.parquet    # Cleaned structured data
-└── articles.db         # Metadata store (SQLite)
+cp src/.env.example src/.env
+# edit src/.env with NEWSAPI_URL/KEY/HOST values
+```
+
+Environment variables loaded via `python-dotenv`:
+
+- `NEWSAPI_URL` – RapidAPI endpoint for NewsAPI
+- `NEWSAPI_KEY` – RapidAPI key
+- `NEWSAPI_HOST` – RapidAPI host header
+- Optional overrides: `LOG_DIR`, `TARGET_TOTAL`
+
+---
+
+## ▶️ Running the Pipeline Locally
+
+```bash
+python -m src.pipeline.run
+```
+
+Logs are written to `src/logs/pipeline.*.log` and console; data outputs stream into `src/data/` (JSONL, Parquet, SQLite).
+
+---
+
+## 🧪 Testing
+
+The pipeline relies on integration runs. Before running locally, ensure dependencies are installed and credentials are valid. Add unit tests around API adapters, producers, and fetchers as the project evolves.
+
+---
+
+## 📁 Repository Layout
+
+```
+src/
+├── api_adapter/      # External API clients (NewsAPI)
+├── pipeline/         # Async producer/fetcher/persistor orchestration
+├── storage/          # SQLite storage helpers
+├── utils/            # Shared utilities (logging, helpers)
+├── data/             # Runtime outputs (ignored in VCS)
+├── logs/             # Log files (ignored in VCS)
+├── .env.example      # Sample environment configuration
+└── README.md         # This document
 ```
 
 ---
 
-## 📸 Preview
-
-![News Pipeline Dashboard](assets/news_pipeline_screenshot.png)
-
----
-
-## 🧾 Author
-
-**Ayomide Abass**  
-Data Engineer | Async Systems | Data Analytics  
-📍 Vancouver, Canada  
-🔗 [LinkedIn](https://www.linkedin.com/in/ayomide-abass)  
-🔗 [GitHub](https://github.com/ayoabass777)
-
----
-
-## 📜 License
+## 📄 License
 
 MIT License © 2025 Ayomide Abass
