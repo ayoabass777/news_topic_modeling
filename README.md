@@ -125,7 +125,7 @@ python src/pipeline/run.py
 **Ayomide Abass**  
 Data Engineer | Async Systems | Data Analytics  
 📍 Vancouver, Canada  
-🔗 [LinkedIn](https://www.linkedin.com/in/ayomide-abass)  
+🔗 [LinkedIn](https://www.linkedin.com/in/ayomide-abass-36b40025a/)  
 🔗 [GitHub](https://github.com/ayoabass777)
 
 ---
