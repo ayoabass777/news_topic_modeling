@@ -90,6 +90,26 @@ src/
 
 ---
 
+<<<<<<< HEAD
 ## 📄 License
+=======
+## 📸 Preview
+
+![News Pipeline Dashboard](assets/news_pipeline_screenshot.png)
+
+---
+
+## 🧾 Author
+
+**Ayomide Abass**  
+Data Engineer | Async Systems | Data Analytics  
+📍 Vancouver, Canada  
+🔗 [LinkedIn](https://www.linkedin.com/in/ayomide-abass-36b40025a/)  
+🔗 [GitHub](https://github.com/ayoabass777)
+
+---
+
+## 📜 License
+>>>>>>> bf3e19732cff2da1b9e2114ddb99ff884a1c8a45
 
 MIT License © 2025 Ayomide Abass
