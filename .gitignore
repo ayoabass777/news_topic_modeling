@@ -25,3 +25,7 @@ news_topic_model/
 news_topic_model.egg-info/
 data/
 logs/
+
+# Keep top-level documentation and dependency manifests
+!README.md
+!requirements.txt
