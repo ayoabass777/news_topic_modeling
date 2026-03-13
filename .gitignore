@@ -1,31 +1,44 @@
-# Ignore everything by default; selectively allow source packages we care about
-*
-
-# Allow this gitignore itself
-!.gitignore
-
-# Keep core source packages
-!api_adapter/
-!api_adapter/**
-!pipeline/
-!pipeline/**
-!storage/
-!storage/**
-!utils/
-!utils/**
-
-# Always ignore transient artifacts
-*.log
+# ── Python build artifacts ─────────────────────────────────────────
 __pycache__/
-*.pyc
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
 
-# Ignore environment/config and build artifacts
+# ── Environment & secrets ──────────────────────────────────────────
 .env
-news_topic_model/
-news_topic_model.egg-info/
+.env.*
+!.env.example
+*.csv
+
+# ── Data / runtime artifacts ───────────────────────────────────────
 data/
 logs/
+*.log
+*.db
+*.sqlite
+*.jsonl
+*.parquet
 
-# Keep top-level documentation and dependency manifests
-!README.md
-!requirements.txt
+# ── OS noise ──────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── IDE ───────────────────────────────────────────────────────────
+.vscode/
+.idea/
+
+# ── OLD flat package copies (superseded by news_topic_model/) ─────
+# These directories existed before the proper package structure.
+# They are intentionally untracked. Do not re-add them.
+# Leading slash anchors to repo root only (won't affect news_topic_model/pipeline/ etc.)
+/api_adapter/
+/pipeline/
+/storage/
+/utils/
+
+# ── Keep the proper package and all other source files ────────────
+# (All other files not matched above are tracked by default)
