@@ -31,14 +31,8 @@ Thumbs.db
 .vscode/
 .idea/
 
-# ── OLD flat package copies (superseded by news_topic_model/) ─────
-# These directories existed before the proper package structure.
-# They are intentionally untracked. Do not re-add them.
-# Leading slash anchors to repo root only (won't affect news_topic_model/pipeline/ etc.)
-/api_adapter/
-/pipeline/
-/storage/
-/utils/
+# ── Experimental package (news_topic_model/ was exploratory, not canonical) ───
+/news_topic_model/
 
 # ── Keep the proper package and all other source files ────────────
 # (All other files not matched above are tracked by default)
