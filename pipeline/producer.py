@@ -7,13 +7,14 @@ import httpx
 
 from src.api_adapter.newsapi import discover_newsapi_page
 from src.api_adapter.rss import discover_rss_feed
-from src.utils.football import LEAGUE_CONFIG, classify_signal
+from src.utils.feed_config import BUCKET_CONFIG
+from src.utils.football import classify_signal
 from src.utils.logger import get_logger
 
 
 logger = get_logger("pipeline.producer")
 
-BUCKETS = LEAGUE_CONFIG
+BUCKETS = BUCKET_CONFIG
 
 TARGET_TOTAL = 100     #overall target of 4000 urls
 
@@ -242,8 +243,8 @@ async def run_round_robin()-> list:
                     urls_discovered.append(
                         {
                             **item_payload,
-                            "bucket": bucket,
-                            "league": item_payload.get("league") or bucket,
+                            "bucket": bucket_config.get("domain", bucket),
+                            "league": bucket if bucket_config.get("domain") == "football" else None,
                             "signal_type": signal_type,
                             "source_type": item_payload.get("source_type") or source_type,
                             "source_feed": item_payload.get("source_feed") or source_feed,

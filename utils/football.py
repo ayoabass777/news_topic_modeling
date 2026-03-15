@@ -3,8 +3,9 @@ from __future__ import annotations
 from urllib.parse import quote_plus
 
 
-LEAGUE_CONFIG = {
+FOOTBALL_BUCKETS = {
     "premier_league": {
+        "domain": "football",
         "label": "Premier League",
         "query": (
             '"Premier League" OR EPL OR "English Premier League" OR Arsenal '
@@ -25,6 +26,7 @@ LEAGUE_CONFIG = {
         ],
     },
     "serie_a": {
+        "domain": "football",
         "label": "Serie A",
         "query": (
             '"Serie A" OR "Italian football" OR Juventus OR Inter OR Milan '
@@ -44,6 +46,7 @@ LEAGUE_CONFIG = {
         ],
     },
     "la_liga": {
+        "domain": "football",
         "label": "La Liga",
         "query": (
             '"La Liga" OR "Spanish football" OR "Real Madrid" OR Barcelona '
@@ -63,6 +66,10 @@ LEAGUE_CONFIG = {
         ],
     },
 }
+
+# Backward-compat alias — producer.py imports LEAGUE_CONFIG
+# Use FOOTBALL_BUCKETS for football-specific references
+LEAGUE_CONFIG = FOOTBALL_BUCKETS
 
 TRANSFER_TERMS = {
     "transfer",

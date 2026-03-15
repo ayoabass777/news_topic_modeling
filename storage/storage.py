@@ -11,6 +11,8 @@ CREATE TABLE IF NOT EXISTS meta (
     publisher_name TEXT,
     date DATETIME,
     content_id TEXT UNIQUE,
+    title TEXT,
+    content TEXT,
     bucket TEXT,
     league TEXT,
     signal_type TEXT,
@@ -26,17 +28,21 @@ INSERT INTO meta (
     publisher_name,
     date,
     content_id,
+    title,
+    content,
     bucket,
     league,
     signal_type,
     source_type,
     source_feed
 )
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 ON CONFLICT(url) DO UPDATE SET
     publisher_name=excluded.publisher_name,
     date=excluded.date,
     content_id=excluded.content_id,
+    title=excluded.title,
+    content=excluded.content,
     bucket=excluded.bucket,
     league=excluded.league,
     signal_type=excluded.signal_type,
@@ -73,6 +79,8 @@ class Storage:
             "signal_type": "TEXT",
             "source_type": "TEXT",
             "source_feed": "TEXT",
+            "title": "TEXT",
+            "content": "TEXT",
         }
         current_columns = {
             row[1] for row in self.conn.execute("PRAGMA table_info(meta)")
@@ -87,6 +95,8 @@ class Storage:
         publisher_name: str,
         date: str,
         content_id: str,
+        title: str | None = None,
+        content: str | None = None,
         bucket: str | None = None,
         league: str | None = None,
         signal_type: str | None = None,
@@ -101,6 +111,8 @@ class Storage:
                     publisher_name,
                     date,
                     content_id,
+                    title,
+                    content,
                     bucket,
                     league,
                     signal_type,

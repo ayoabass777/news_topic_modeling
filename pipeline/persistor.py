@@ -62,6 +62,8 @@ async def file_writer(content_queue: asyncio.Queue, dir_path: str | Path, write_
                         publisher_name=item.get("publisher_name"),
                         date=item.get("published_date"),
                         content_id=item.get("content_id"),
+                        title=item.get("title"),
+                        content=item.get("content"),
                         bucket=item.get("bucket"),
                         league=item.get("league"),
                         signal_type=item.get("signal_type"),
