@@ -7,8 +7,8 @@ import contextlib
 
 from src.utils.logger import get_logger
 
-MAX_QUEUE_SIZE = 100
-FETCHER_WORKERS = 3
+MAX_QUEUE_SIZE = 200
+FETCHER_WORKERS = 5
 
 logger = get_logger("pipeline.run")
 
@@ -81,12 +81,9 @@ async def run_queue()->None:
 
     async def fetchers_run_and_forward_sentinel():
         try:
-            async with asyncio.TaskGroup() as ftg:
-                for idx in range(FETCHER_WORKERS):
-                    ftg.create_task(
-                        fetcher(url_queue, content_queue),
-                        name=f"fetcher-{idx}",
-                    )
+                await asyncio.gather(
+                *[fetcher(url_queue, content_queue) for idx in range(FETCHER_WORKERS)]
+            )
         finally:
             try:
                 await content_queue.join()
@@ -103,13 +100,11 @@ async def run_queue()->None:
             name="monitor_queues",
         )
 
-        async with asyncio.TaskGroup() as tg:
-            #Run each stage under supervise; if one crashes, the whole pipeline cancels
-            tg.create_task(supervise("persistor", persistor(content_queue)), name="supervise_persistor")
-        
-            tg.create_task(supervise("fetchers", fetchers_run_and_forward_sentinel()), name="supervise_fetchers")
-
-            tg.create_task(supervise("producer", producer_run_and_forward_sentinel()), name="supervise_producer")
+        await asyncio.gather(
+            supervise("persistor", persistor(content_queue)),
+            supervise("fetchers", fetchers_run_and_forward_sentinel()),
+            supervise("producer", producer_run_and_forward_sentinel()),
+        )
 
     finally:
         monitor_task.cancel()

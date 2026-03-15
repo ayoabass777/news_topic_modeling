@@ -33,17 +33,23 @@ FINANCE_BUCKETS: dict = {
         ),
         "feeds": [
             {
-                "name": "Reuters Business",
-                "url": "https://feeds.reuters.com/reuters/businessNews",
+                "name": "MarketWatch",
+                "url": "https://feeds.marketwatch.com/marketwatch/topstories/",
             },
             {
-                "name": "Reuters Finance",
-                "url": "https://feeds.reuters.com/reuters/financialsNews",
+                "name": "Seeking Alpha",
+                "url": "https://seekingalpha.com/market_currents.xml",
             },
             {
                 "name": "Google News Finance",
                 "url": "https://news.google.com/rss/search?q="
                 + quote_plus("stock market OR inflation OR interest rates OR earnings")
+                + "&hl=en-US&gl=US&ceid=US:en",
+            },
+            {
+                "name": "Google News Reuters Finance",
+                "url": "https://news.google.com/rss/search?q="
+                + quote_plus("reuters finance OR bloomberg markets OR financial times")
                 + "&hl=en-US&gl=US&ceid=US:en",
             },
         ],

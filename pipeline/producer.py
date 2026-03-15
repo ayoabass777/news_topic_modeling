@@ -16,7 +16,7 @@ logger = get_logger("pipeline.producer")
 
 BUCKETS = BUCKET_CONFIG
 
-TARGET_TOTAL = 100     #overall target of 4000 urls
+TARGET_TOTAL = 500     #overall target — ~100 per bucket across 5 buckets
 
 INIT_QUOTA = TARGET_TOTAL//len(BUCKETS)  #evenly distribute quota across buckets
 MIN_PER_BUCKET = int(0.2 * INIT_QUOTA)  #minimum quota per bucket
@@ -161,7 +161,15 @@ async def run_round_robin()-> list:
     api_exhausted = {bucket: False for bucket in BUCKETS}
     urls_discovered = []
 
-    async with httpx.AsyncClient(follow_redirects= True) as client:
+    _headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/123.0.0.0 Safari/537.36"
+        ),
+        "Accept": "application/rss+xml, application/xml, text/xml, */*",
+    }
+    async with httpx.AsyncClient(follow_redirects=True, headers=_headers) as client:
         for bucket in cycle(BUCKETS.keys()):
             if not active:
                 break

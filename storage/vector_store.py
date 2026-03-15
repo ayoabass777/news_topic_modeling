@@ -14,10 +14,18 @@ Each article is stored as a row with:
 
 import os
 from datetime import datetime, timezone
+from pathlib import Path
 
 import psycopg2
 import psycopg2.extras
 from pgvector.psycopg2 import register_vector
+
+# Load .env from project root so credentials are available regardless of how the script is invoked
+try:
+    from dotenv import load_dotenv
+    load_dotenv(Path(__file__).resolve().parents[2] / ".env")
+except ImportError:
+    pass  # dotenv optional — fall back to env vars already set in shell
 
 from src.utils.logger import get_logger
 
@@ -55,6 +63,10 @@ def _get_conn() -> psycopg2.extensions.connection:
         user=os.getenv("POSTGRES_USER", "ayo"),
         password=os.getenv("POSTGRES_PASSWORD", ""),
     )
+    # Ensure the pgvector extension exists before registering the type
+    with conn.cursor() as cur:
+        cur.execute("CREATE EXTENSION IF NOT EXISTS vector;")
+    conn.commit()
     register_vector(conn)
     return conn
 
