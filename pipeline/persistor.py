@@ -87,7 +87,7 @@ async def file_writer(content_queue: asyncio.Queue, dir_path: str | Path, write_
             finally:
                 content_queue.task_done()
     store.close()
-        
+
     if write_parquet and parquet_buffer:
         parquet_persist(parquet_buffer, parquet_path)
 
