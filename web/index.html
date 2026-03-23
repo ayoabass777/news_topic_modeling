@@ -3,52 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Football News Intelligence</title>
+    <title>News Intelligence</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
     <div class="app-shell">
         <header class="hero">
             <div class="hero-copy">
-                <p class="eyebrow">Football Monitor</p>
-                <h1>Football News Intelligence</h1>
-                <p class="subtitle">Premier League, Serie A, and La Liga coverage with transfer, trend, and query workflows.</p>
+                <p class="eyebrow">News Monitor</p>
+                <h1>News Intelligence</h1>
+                <p class="subtitle">Browse, search, and semantically query your ingested news corpus.</p>
             </div>
-            <div class="hero-badges">
-                <span class="badge">Premier League</span>
-                <span class="badge">Serie A</span>
-                <span class="badge">La Liga</span>
-            </div>
+            <div class="hero-badges" id="heroBadges"></div>
         </header>
 
         <nav class="tabs">
             <button class="tab-btn active" data-tab="browse">Monitor</button>
             <button class="tab-btn" data-tab="search">Search</button>
-            <button class="tab-btn" data-tab="graphrag">Ask</button>
             <button class="tab-btn" data-tab="stats">Stats</button>
         </nav>
 
         <main class="panel">
+            <!-- Browse tab -->
             <section class="tab-content active" id="browse">
                 <div class="toolbar">
                     <div class="filters">
-                        <select id="browseLeague" class="select-input">
-                            <option value="">All leagues</option>
-                            <option value="premier_league">Premier League</option>
-                            <option value="serie_a">Serie A</option>
-                            <option value="la_liga">La Liga</option>
+                        <select id="browseBucket" class="select-input">
+                            <option value="">All topics</option>
                         </select>
                         <select id="browseSignal" class="select-input">
                             <option value="">All signals</option>
-                            <option value="general_news">General news</option>
-                            <option value="transfers">Transfers</option>
-                            <option value="trends">Trends</option>
                         </select>
                         <input type="date" id="browseDateFrom" class="date-input">
                         <input type="date" id="browseDateTo" class="date-input">
                     </div>
                     <div class="actions">
-                        <button id="loadArticles" class="btn btn-primary">Load Monitor</button>
+                        <button id="loadArticles" class="btn btn-primary">Load</button>
                         <div class="pagination">
                             <button id="prevPage" class="btn btn-secondary" disabled>Previous</button>
                             <span id="pageInfo">Page 1</span>
@@ -59,20 +49,15 @@
                 <div id="articlesList" class="articles-list"></div>
             </section>
 
+            <!-- Search tab -->
             <section class="tab-content" id="search">
                 <div class="toolbar search-toolbar">
-                    <input type="text" id="searchInput" placeholder="Search clubs, leagues, players, or transfer stories..." class="search-input">
-                    <select id="searchLeague" class="select-input">
-                        <option value="">All leagues</option>
-                        <option value="premier_league">Premier League</option>
-                        <option value="serie_a">Serie A</option>
-                        <option value="la_liga">La Liga</option>
+                    <input type="text" id="searchInput" placeholder="Search articles..." class="search-input">
+                    <select id="searchBucket" class="select-input">
+                        <option value="">All topics</option>
                     </select>
                     <select id="searchSignal" class="select-input">
                         <option value="">All signals</option>
-                        <option value="general_news">General news</option>
-                        <option value="transfers">Transfers</option>
-                        <option value="trends">Trends</option>
                     </select>
                     <div class="search-mode-toggle">
                         <label class="toggle-label">
@@ -86,38 +71,7 @@
                 <div id="searchResults" class="articles-list"></div>
             </section>
 
-            <section class="tab-content" id="graphrag">
-                <div class="query-section">
-                    <h2>Ask the monitor</h2>
-                    <textarea id="graphragQuery" placeholder="What are the latest transfer developments in Serie A?" class="query-input"></textarea>
-                    <div class="query-controls">
-                        <select id="queryLeague" class="select-input">
-                            <option value="">All leagues</option>
-                            <option value="premier_league">Premier League</option>
-                            <option value="serie_a">Serie A</option>
-                            <option value="la_liga">La Liga</option>
-                        </select>
-                        <select id="querySignal" class="select-input">
-                            <option value="">All signals</option>
-                            <option value="general_news">General news</option>
-                            <option value="transfers">Transfers</option>
-                            <option value="trends">Trends</option>
-                        </select>
-                        <label class="max-results">
-                            Max results
-                            <input type="number" id="maxResults" value="8" min="1" max="25" class="number-input">
-                        </label>
-                        <button id="queryBtn" class="btn btn-primary">Run Query</button>
-                    </div>
-                </div>
-                <div id="graphragResults" class="graphrag-results">
-                    <div class="loading" id="graphragLoading" style="display: none;">Scanning football coverage...</div>
-                    <div id="graphragAnswer" class="answer-section"></div>
-                    <div id="graphragEntities" class="entities-section"></div>
-                    <div id="graphragSources" class="sources-section"></div>
-                </div>
-            </section>
-
+            <!-- Stats tab -->
             <section class="tab-content" id="stats">
                 <div class="stats-header">
                     <button id="loadStats" class="btn btn-primary">Refresh Stats</button>
