@@ -67,21 +67,21 @@ class TestVectorStoreSearchSQL:
 class TestSemanticSearchServiceUnit:
     """Unit tests for SemanticSearchService (mocked dependencies)."""
 
-    @patch("src.news_topic_model.services.semantic_search_service.VectorStore")
-    @patch("src.news_topic_model.services.semantic_search_service.SentenceTransformer")
+    @patch("src.services.semantic_search_service.VectorStore")
+    @patch("src.services.semantic_search_service.SentenceTransformer")
     def test_empty_query_returns_empty(self, mock_model_cls, mock_store_cls):
         mock_store = MagicMock()
         mock_store.count.return_value = 100
         mock_store_cls.return_value = mock_store
 
-        from src.news_topic_model.services.semantic_search_service import SemanticSearchService
+        from src.services.semantic_search_service import SemanticSearchService
         service = SemanticSearchService(db_path="/tmp/fake.db", lazy_model=True)
 
         results = service.search("", limit=10)
         assert results == []
 
-    @patch("src.news_topic_model.services.semantic_search_service.VectorStore")
-    @patch("src.news_topic_model.services.semantic_search_service.SentenceTransformer")
+    @patch("src.services.semantic_search_service.VectorStore")
+    @patch("src.services.semantic_search_service.SentenceTransformer")
     def test_search_calls_vector_store(self, mock_model_cls, mock_store_cls):
         """search() should encode the query and call VectorStore.search()."""
         import numpy as np
@@ -97,7 +97,7 @@ class TestSemanticSearchServiceUnit:
         mock_model.encode.return_value = np.zeros(384)
         mock_model_cls.return_value = mock_model
 
-        from src.news_topic_model.services.semantic_search_service import SemanticSearchService
+        from src.services.semantic_search_service import SemanticSearchService
         service = SemanticSearchService(db_path="/tmp/fake.db", lazy_model=False)
 
         results = service.search("transfer rumours", limit=5)

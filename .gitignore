@@ -32,7 +32,7 @@ Thumbs.db
 .idea/
 
 # ── Exclude messy exploratory package, but keep live services ─────
-src/news_topic_model/
+src/news_topic_model/*
 !src/news_topic_model/services/
 !src/news_topic_model/services/**
 

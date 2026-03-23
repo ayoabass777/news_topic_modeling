@@ -11,8 +11,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from src.news_topic_model.services.graphrag_service import GraphRAGService
-from src.news_topic_model.services.semantic_search_service import SemanticSearchService
+from src.services.semantic_search_service import SemanticSearchService
 from src.utils.football import LEAGUE_CONFIG, league_label
 from src.utils.logger import get_logger
 
@@ -51,19 +50,6 @@ class ArticleResponse(BaseModel):
     source_feed: Optional[str] = None
 
 
-class GraphRAGQuery(BaseModel):
-    query: str
-    max_results: int = 10
-    league: Optional[str] = None
-    signal_type: Optional[str] = None
-
-
-class GraphRAGResponse(BaseModel):
-    answer: str
-    sources: List[ArticleResponse] = []
-    entities: List[str] = []
-    relationships: List[dict] = []
-
 
 class SemanticSearchResult(BaseModel):
     url: str
@@ -78,8 +64,6 @@ class SemanticSearchResult(BaseModel):
     signal_type: Optional[str] = None
     source_type: Optional[str] = None
 
-
-graphrag_service = GraphRAGService(data_dirs=DATA_DIRS)
 
 # Lazy-initialised: model loads on first search request, not at startup
 _semantic_service: Optional[SemanticSearchService] = None
@@ -349,25 +333,6 @@ async def semantic_search_stats():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Stats error: {str(e)}")
 
-
-@app.post("/api/graphrag/query", response_model=GraphRAGResponse)
-async def query_graphrag(query: GraphRAGQuery):
-    try:
-        result = await graphrag_service.query(
-            query.query,
-            max_results=query.max_results,
-            league=query.league,
-            signal_type=query.signal_type,
-        )
-        sources = [_article_response(article, truncate_content=True) for article in result.get("sources", [])]
-        return GraphRAGResponse(
-            answer=result.get("answer", ""),
-            sources=sources,
-            entities=result.get("entities", []),
-            relationships=result.get("relationships", []),
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"GraphRAG query error: {str(e)}")
 
 
 @app.get("/api/stats")
