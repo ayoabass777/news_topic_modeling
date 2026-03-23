@@ -40,7 +40,7 @@ async def monitor_queues(url_queue: NamedQueue, content_queue: NamedQueue,  inte
     try:
         while True:
             await asyncio.sleep(interval)
-            logger.debug(
+            logger.info(
                 "run: queue sizes %s=%d %s=%d",
                 url_queue.name,
                 url_queue.qsize(),
@@ -110,15 +110,6 @@ async def run_queue()->None:
         monitor_task.cancel()
         with contextlib.suppress(asyncio.CancelledError):
             await monitor_task
-            
-        logger.info(
-            "run: final queue sizes %s=%d %s=%d",
-            url_queue.name,
-            url_queue.qsize(),
-            content_queue.name,
-            content_queue.qsize(),
-        )
-
 
 
 if __name__ == "__main__":
