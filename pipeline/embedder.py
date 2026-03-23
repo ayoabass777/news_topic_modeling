@@ -123,6 +123,9 @@ def run_embedder() -> None:
             len(pending),
         )
 
+    # Create IVFFlat index if we have enough rows (auto-skips if <1000)
+    store.create_index()
+
     store.close()
     logger.info("embedder: finished — %d embeddings upserted", total_upserted)
 
