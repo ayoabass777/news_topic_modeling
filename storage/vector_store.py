@@ -53,6 +53,21 @@ ON CONFLICT (content_id) DO UPDATE SET
     embedded_at = EXCLUDED.embedded_at;
 """
 
+SEARCH_SQL = """
+SELECT content_id, url, title,
+       1 - (embedding <=> %(query_embedding)s) AS similarity
+FROM article_embeddings
+ORDER BY embedding <=> %(query_embedding)s
+LIMIT %(limit)s;
+"""
+
+CREATE_INDEX_SQL = """
+CREATE INDEX IF NOT EXISTS idx_article_embeddings_ivfflat
+ON article_embeddings
+USING ivfflat (embedding vector_cosine_ops)
+WITH (lists = %(lists)s);
+"""
+
 
 def _get_conn() -> psycopg2.extensions.connection:
     """Create a psycopg2 connection from environment variables."""
@@ -138,6 +153,46 @@ class VectorStore:
         with self.conn.cursor() as cur:
             cur.execute("SELECT content_id FROM article_embeddings")
             return {row[0] for row in cur.fetchall()}
+
+    def search(self, query_embedding: list[float], limit: int = 10) -> list[dict]:
+        """
+        Find the closest articles to a query embedding using cosine similarity.
+
+        Returns a list of dicts with: content_id, url, title, similarity (0-1).
+        Think of it like asking a librarian "find me articles about X" —
+        the librarian understands meaning, not just keywords.
+        """
+        with self.conn.cursor() as cur:
+            cur.execute(SEARCH_SQL, {"query_embedding": query_embedding, "limit": limit})
+            columns = [desc[0] for desc in cur.description]
+            return [dict(zip(columns, row)) for row in cur.fetchall()]
+
+    def create_index(self, num_lists: int | None = None) -> None:
+        """
+        Create an IVFFlat index for faster approximate nearest-neighbour search.
+
+        Rule of thumb: lists = sqrt(num_rows). For <1000 rows, skip the index
+        — pgvector will do an exact scan which is fast enough.
+        """
+        if num_lists is None:
+            with self.conn.cursor() as cur:
+                cur.execute("SELECT COUNT(*) FROM article_embeddings")
+                count = cur.fetchone()[0]
+            if count < 1000:
+                logger.info("vector_store: %d rows — skipping IVFFlat (exact scan is fine)", count)
+                return
+            num_lists = max(1, int(count ** 0.5))
+
+        with self.conn.cursor() as cur:
+            cur.execute(CREATE_INDEX_SQL, {"lists": num_lists})
+        self.conn.commit()
+        logger.info("vector_store: IVFFlat index created (lists=%d)", num_lists)
+
+    def count(self) -> int:
+        """Return total number of stored embeddings."""
+        with self.conn.cursor() as cur:
+            cur.execute("SELECT COUNT(*) FROM article_embeddings")
+            return cur.fetchone()[0]
 
     def close(self) -> None:
         if self.conn:
