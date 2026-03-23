@@ -1,5 +1,7 @@
 # News Ingestion Pipeline
 
+> 🚧 **Work in progress** — pipeline and semantic search are stable; web app is under active development.
+
 An end-to-end asynchronous news ingestion and semantic search system. Fetches articles from RSS feeds and public APIs, deduplicates them, stores metadata in SQLite, generates vector embeddings, and exposes a web interface for keyword and semantic search.
 
 ---
