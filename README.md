@@ -95,9 +95,10 @@ Environment variables (copy from `src/.env.example`):
 
 | Method | Path | Description |
 |---|---|---|
-| GET | `/api/articles` | Paginated article list (`limit`, `offset`) |
-| GET | `/api/articles/search` | Keyword search (`q`, `limit`) |
+| GET | `/api/articles` | Paginated article list (`limit`, `offset`, `bucket`, `signal_type`) |
+| GET | `/api/articles/search` | Keyword search (`q`, `limit`, `bucket`) |
 | GET | `/api/articles/semantic-search` | Vector similarity search (`q`, `limit`, `min_similarity`) |
+| GET | `/api/filters` | Distinct buckets and signal types in the corpus |
 | GET | `/api/stats` | Dataset overview (counts, publishers, date range) |
 | GET | `/api/semantic-search/stats` | Embedding coverage stats |
 
@@ -110,10 +111,9 @@ news_topic_model/
 ├── src/
 │   ├── api_adapter/        # RSS and NewsAPI clients
 │   ├── pipeline/           # Producer, fetcher, persistor, embedder, orchestrator
+│   ├── services/           # SemanticSearchService
 │   ├── storage/            # SQLite and pgvector store helpers
-│   ├── utils/              # URL normalisation, logging, feed config
-│   └── news_topic_model/
-│       └── services/       # SemanticSearchService
+│   └── utils/              # URL normalisation, logging, feed config
 ├── web/
 │   ├── index.html
 │   └── static/             # app.js, style.css
