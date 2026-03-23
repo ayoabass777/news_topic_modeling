@@ -176,5 +176,6 @@ async def discover_rss_feed(
         if len(items) >= LIMIT_PER_CALL:
             break
 
+    logger.info("rss: fetched feed=%s league=%s items=%d", feed_url, league, len(items))
     metadata = PaginationMetaContract(page=1, totalHits=len(items), totalPages=1, size=len(items))
     return PageOfNewsDataContract(data=items, metadata=metadata)
