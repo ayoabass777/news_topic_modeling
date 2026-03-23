@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "news_topic_model"
+version = "0.1.0"
+description = "News Topic Modeling and Ingestion Pipeline"
+authors = [ { name = "Ayomide Abass" } ]
+readme = { text = "News Topic Modeling and Ingestion Pipeline.", content-type = "text/plain" }
+requires-python = ">=3.10"
+
+dependencies = [
+  "pandas",
+  "httpx",
+  "langdetect",
+  "trafilatura",
+  "pyarrow",
+  "pydantic>=2.0",
+  "pydantic-settings",
+  "aiolimiter",
+  "sentence-transformers",
+  "psycopg2-binary",
+  "pgvector"
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "black", "isort", "mypy"]
+
+[project.scripts]
+news-topic-model = "news_topic_model.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["news_topic_model", "news_topic_model.*"]

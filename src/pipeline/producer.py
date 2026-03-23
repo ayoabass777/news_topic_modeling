@@ -179,6 +179,7 @@ async def run_round_robin()-> list:
     pages = {bucket: 0 for bucket in BUCKETS}           # next page to request per bucket
     active = set(BUCKETS.keys())                        # currently active buckets
     seen_urls = load_persisted_urls()                    # seed with already-persisted urls
+    initial_seen_count = len(seen_urls)                  # snapshot before discovery adds new urls
     per_domain_bucket = defaultdict(int)                # (bucket, domain) -> count of domain per bucket
     recent_stats = {bucket: deque(maxlen=DEDUP_WINDOW_PAGES) for bucket in BUCKETS}
     rss_indices = {bucket: 0 for bucket in BUCKETS}
@@ -341,7 +342,7 @@ async def run_round_robin()-> list:
             len(active),
             len(seen_urls),
         )
-        return urls_discovered   
+        return urls_discovered, initial_seen_count
 
 
 async def producer(url_queue: Queue) -> None:
@@ -360,8 +361,12 @@ async def producer(url_queue: Queue) -> None:
         The total number of URLs to discover, by default TARGET_TOTAL.
     """
     logger.info("producer: starting producer coroutine")
-    urls_discovered = await run_round_robin()
-    logger.info("producer: enqueuing %d discovered urls", len(urls_discovered))
+    urls_discovered, initial_seen_count = await run_round_robin()
+    logger.info(
+        "producer: enqueuing %d new urls (skipped %d already-persisted)",
+        len(urls_discovered),
+        initial_seen_count,
+    )
     for discovery in urls_discovered:
         msg = discovery
         await url_queue.put(msg)

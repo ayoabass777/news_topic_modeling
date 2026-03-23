@@ -31,8 +31,11 @@ Thumbs.db
 .vscode/
 .idea/
 
-# ── Experimental package (news_topic_model/ was exploratory, not canonical) ───
-/news_topic_model/
+# ── Exclude messy exploratory package, but keep live services ─────
+src/news_topic_model/
+!src/news_topic_model/services/
+!src/news_topic_model/services/**
 
-# ── Keep the proper package and all other source files ────────────
-# (All other files not matched above are tracked by default)
+# ── Not used in this project ───────────────────────────────────────
+spark_jobs/
+docs/
