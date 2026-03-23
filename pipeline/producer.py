@@ -1,7 +1,9 @@
 
+import sqlite3
 from asyncio import Queue
 from collections import defaultdict, deque
 from itertools import cycle
+from pathlib import Path
 from urllib.parse import urlparse
 import httpx
 
@@ -10,11 +12,13 @@ from src.api_adapter.rss import discover_rss_feed
 from src.utils.feed_config import BUCKET_CONFIG
 from src.utils.football import classify_signal
 from src.utils.logger import get_logger
+from src.utils.urlnorm import normalize_url
 
 
 logger = get_logger("pipeline.producer")
 
 BUCKETS = BUCKET_CONFIG
+DB_PATH = Path(__file__).parent.parent / "data" / "articles.db"
 
 TARGET_TOTAL = 500     #overall target — ~100 per bucket across 5 buckets
 
@@ -70,7 +74,7 @@ def ok_to_add(
     bool
         True if the item can be added, False otherwise.
     """
-    url = item.get('url')
+    url = normalize_url(item.get('url') or '')
     if not url or url in seen_urls:
         return False
     domain = domain_from_url(url)
@@ -110,7 +114,7 @@ def record_add(
     per_domain_bucket : dict, keyword-only
         Tracks per-domain contribution within a bucket.
     """
-    url = item.get('url')
+    url = normalize_url(item.get('url') or '')
     seen_urls.add(url)
     per_domain_bucket[(bucket, domain_from_url(url))] += 1
     counts[bucket] += 1
@@ -143,7 +147,27 @@ def should_reallocate(bucket: str, *, recent_stats) -> bool:
     return avg_dup_rate > DEDUP_RATE_BAD
 
     
-async def run_round_robin()-> list:   
+def load_persisted_urls(db_path: Path = DB_PATH) -> set[str]:
+    """
+    Load URLs already in SQLite so the producer skips them.
+
+    Without this, every run re-discovers the same RSS URLs, fetches them,
+    and the persistor silently upserts duplicates — wasting fetch cycles.
+    """
+    if not db_path.exists():
+        return set()
+    try:
+        conn = sqlite3.connect(db_path)
+        urls = {normalize_url(row[0]) for row in conn.execute("SELECT url FROM meta").fetchall()}
+        conn.close()
+        logger.info("producer: loaded %d already-persisted urls from db", len(urls))
+        return urls
+    except Exception as e:
+        logger.warning("producer: could not load persisted urls (%s), starting fresh", e)
+        return set()
+
+
+async def run_round_robin()-> list:
     """Run a round-robin discovery process across multiple buckets.
     This function iterates over the defined buckets, checking if there are
     items to discover in each bucket. If a bucket has items available,
@@ -154,7 +178,7 @@ async def run_round_robin()-> list:
     counts = {bucket: 0 for bucket in BUCKETS}          # current counts of accepted url per bucket
     pages = {bucket: 0 for bucket in BUCKETS}           # next page to request per bucket
     active = set(BUCKETS.keys())                        # currently active buckets
-    seen_urls = set()                                   # set of seen URLs to avoid duplicates
+    seen_urls = load_persisted_urls()                    # seed with already-persisted urls
     per_domain_bucket = defaultdict(int)                # (bucket, domain) -> count of domain per bucket
     recent_stats = {bucket: deque(maxlen=DEDUP_WINDOW_PAGES) for bucket in BUCKETS}
     rss_indices = {bucket: 0 for bucket in BUCKETS}
@@ -312,9 +336,10 @@ async def run_round_robin()-> list:
         #logger.info(f"{"counts": counts, "quota": quota, "seen_urls": len(seen_urls), "active_buckets": len(active), "pages": pages}) 
         total_discovered = len(urls_discovered)
         logger.info(
-            "producer: discovery complete total=%d active_remaining=%d",
+            "producer: discovery complete total=%d active_remaining=%d seen_urls=%d",
             total_discovered,
             len(active),
+            len(seen_urls),
         )
         return urls_discovered   
 
@@ -347,3 +372,6 @@ async def producer(url_queue: Queue) -> None:
             msg.get("source_type"),
             msg.get("signal_type"),
         )
+    
+    logger.info("producer: done enqueuing discovered urls, sending sentinel")
+    
