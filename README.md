@@ -36,7 +36,7 @@ Web App (FastAPI + semantic/keyword search UI)
 
 | Layer | Tool |
 |---|---|
-| Async runtime | Python 3.11 `asyncio` |
+| Async runtime | Python 3.10+ `asyncio` |
 | HTTP client | `httpx` |
 | Content extraction | `trafilatura` |
 | Metadata store | SQLite (`sqlite3`) |
