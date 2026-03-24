@@ -79,8 +79,7 @@ body {
 
 .badge,
 .source-pill,
-.tag,
-.entity-tag {
+.tag {
     border-radius: 999px;
     display: inline-flex;
     font-size: 0.82rem;
@@ -288,8 +287,6 @@ body {
     color: #355243;
 }
 
-.query-section,
-.answer-section,
 .stats-panel,
 .stat-card,
 .mini-stat,
@@ -299,35 +296,14 @@ body {
     border-radius: 18px;
 }
 
-.query-section,
-.answer-section,
 .stats-panel {
     padding: 20px;
 }
 
-.query-section h2,
 .stats-section h3,
-.stats-panel h3,
-.answer-section h3,
-.sources-section h3,
-.entities-section h3 {
+.stats-panel h3 {
     font-family: Georgia, "Times New Roman", serif;
     margin-bottom: 14px;
-}
-
-.graphrag-results {
-    display: grid;
-    gap: 18px;
-    margin-top: 22px;
-}
-
-.answer-section {
-    border-left: 6px solid var(--accent);
-}
-
-.entity-tag {
-    background: var(--brand-dark);
-    color: white;
 }
 
 .stats-stack {

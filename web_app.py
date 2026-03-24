@@ -2,6 +2,7 @@
 FastAPI web application for News Intelligence.
 """
 import sqlite3
+from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import List, Optional
@@ -67,10 +68,14 @@ def _get_semantic_service() -> SemanticSearchService:
 
 # ── SQLite helpers ─────────────────────────────────────────────────────────────
 
-def _get_conn() -> sqlite3.Connection:
+@contextmanager
+def _get_conn():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
-    return conn
+    try:
+        yield conn
+    finally:
+        conn.close()
 
 
 def _to_datetime(value) -> datetime | None:
